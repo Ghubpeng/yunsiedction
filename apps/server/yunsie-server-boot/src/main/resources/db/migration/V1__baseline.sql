@@ -1,0 +1,5 @@
+-- Stage 1 工程骨架基线：暂无业务表。
+-- 业务表迁移自 V2 起按 database-design 规范追加：
+--   域前缀 snake_case 命名 / 必备字段(id, create_time, update_time, deleted[, version]) /
+--   金额 DECIMAL(18,4) / Token 数量 DECIMAL(18,6) / 无物理外键 / 每表每字段必须 COMMENT。
+-- 迁移脚本不可变：已执行的脚本禁止修改，错误用新脚本修正。

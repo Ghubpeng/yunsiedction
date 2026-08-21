@@ -1,0 +1,34 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+
+    <parent>
+        <groupId>com.yunsie</groupId>
+        <artifactId>yunsie-server</artifactId>
+        <version>0.1.0-SNAPSHOT</version>
+    </parent>
+
+    <artifactId>yunsie-module-pay</artifactId>
+    <name>yunsie-module-pay</name>
+    <description>pay 域：平台币钱包、订单、支付渠道抽象（微信/支付宝，MVP 预留适配层）、VIP（购买+有效期+权益配置）。资金操作幂等+流水+审计。依赖 user / ai（平台币购 Token 入账）。</description>
+
+    <dependencies>
+        <dependency>
+            <groupId>com.yunsie</groupId>
+            <artifactId>yunsie-server-common</artifactId>
+            <version>${project.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>com.yunsie</groupId>
+            <artifactId>yunsie-module-user</artifactId>
+            <version>${project.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>com.yunsie</groupId>
+            <artifactId>yunsie-module-ai</artifactId>
+            <version>${project.version}</version>
+        </dependency>
+    </dependencies>
+</project>

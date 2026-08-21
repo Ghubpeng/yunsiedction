@@ -1,0 +1,92 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+
+    <parent>
+        <groupId>com.yunsie</groupId>
+        <artifactId>yunsie-server</artifactId>
+        <version>0.1.0-SNAPSHOT</version>
+    </parent>
+
+    <artifactId>yunsie-module-learning-profile</artifactId>
+    <name>yunsie-module-learning-profile</name>
+    <description>learning-profile 域：学习历史汇总/知识点掌握度/薄弱点/学习日历/考试通过率预测（消费式叶子域）。
+        仅经各域 api 包读取与消费 ExamFinishedEvent；依赖 sys/user/certificate/subject/question/exam/course，无反向依赖。</description>
+
+    <dependencies>
+        <dependency>
+            <groupId>com.yunsie</groupId>
+            <artifactId>yunsie-server-common</artifactId>
+            <version>${project.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>com.yunsie</groupId>
+            <artifactId>yunsie-module-sys</artifactId>
+            <version>${project.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>com.yunsie</groupId>
+            <artifactId>yunsie-module-user</artifactId>
+            <version>${project.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>com.yunsie</groupId>
+            <artifactId>yunsie-module-certificate</artifactId>
+            <version>${project.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>com.yunsie</groupId>
+            <artifactId>yunsie-module-subject</artifactId>
+            <version>${project.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>com.yunsie</groupId>
+            <artifactId>yunsie-module-question</artifactId>
+            <version>${project.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>com.yunsie</groupId>
+            <artifactId>yunsie-module-exam</artifactId>
+            <version>${project.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>com.yunsie</groupId>
+            <artifactId>yunsie-module-course</artifactId>
+            <version>${project.version}</version>
+        </dependency>
+        <!-- 领域基础设施：Web(Controller) / ORM(Mapper) / 校验 / @PreAuthorize / Lombok -->
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-web</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>com.baomidou</groupId>
+            <artifactId>mybatis-plus-spring-boot3-starter</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>jakarta.validation</groupId>
+            <artifactId>jakarta.validation-api</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.springframework.security</groupId>
+            <artifactId>spring-security-core</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.projectlombok</groupId>
+            <artifactId>lombok</artifactId>
+            <scope>provided</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-test</artifactId>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-validation</artifactId>
+            <scope>test</scope>
+        </dependency>
+    </dependencies>
+</project>

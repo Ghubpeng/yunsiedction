@@ -1,0 +1,49 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+
+    <parent>
+        <groupId>com.yunsie</groupId>
+        <artifactId>yunsie-server</artifactId>
+        <version>0.1.0-SNAPSHOT</version>
+    </parent>
+
+    <artifactId>yunsie-module-ai</artifactId>
+    <name>yunsie-module-ai</name>
+    <description>ai 域：AI 场景入口、请求上下文组装（ContextBuilder）、Token 账务与流水、场景→模型→Provider 路由配置、AI 服务调用网关。MVP 仅 3 场景：course.chat / question.help / note.summarize。依赖 user / subject / course / question / certificate。</description>
+
+    <dependencies>
+        <dependency>
+            <groupId>com.yunsie</groupId>
+            <artifactId>yunsie-server-common</artifactId>
+            <version>${project.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>com.yunsie</groupId>
+            <artifactId>yunsie-module-user</artifactId>
+            <version>${project.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>com.yunsie</groupId>
+            <artifactId>yunsie-module-subject</artifactId>
+            <version>${project.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>com.yunsie</groupId>
+            <artifactId>yunsie-module-course</artifactId>
+            <version>${project.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>com.yunsie</groupId>
+            <artifactId>yunsie-module-question</artifactId>
+            <version>${project.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>com.yunsie</groupId>
+            <artifactId>yunsie-module-certificate</artifactId>
+            <version>${project.version}</version>
+        </dependency>
+    </dependencies>
+</project>

@@ -1,0 +1,89 @@
+spring:
+  application:
+    name: yunsie-server
+  profiles:
+    active: ${SPRING_PROFILES_ACTIVE:dev}
+  datasource:
+    driver-class-name: com.mysql.cj.jdbc.Driver
+    url: "jdbc:mysql://${MYSQL_HOST:localhost}:${MYSQL_PORT:3306}/${MYSQL_DATABASE:yunsie_platform}?useUnicode=true&characterEncoding=utf8&serverTimezone=Asia/Shanghai&useSSL=false&allowPublicKeyRetrieval=true"
+    username: ${MYSQL_USER:root}
+    password: ${MYSQL_PASSWORD:devpassword}
+  data:
+    redis:
+      host: ${REDIS_HOST:localhost}
+      port: ${REDIS_PORT:6379}
+      password: ${REDIS_PASSWORD:}
+  flyway:
+    enabled: true
+    locations: classpath:db/migration
+  servlet:
+    multipart:
+      # 课程视频上传（Stage 1.8 补齐：默认 1MB 限制会导致视频上传失败）
+      max-file-size: ${YUNSIE_MULTIPART_MAX_FILE_SIZE:500MB}
+      max-request-size: ${YUNSIE_MULTIPART_MAX_REQUEST_SIZE:500MB}
+
+server:
+  port: ${SERVER_PORT:8080}
+
+# JWT（api-design：access 短效 + refresh 长效轮换）
+# 生产环境必须经 YUNSIE_JWT_SECRET 注入；默认值仅为本地开发占位，禁止用于生产
+yunsie:
+  jwt:
+    secret: ${YUNSIE_JWT_SECRET:dev-only-secret-please-change-0123456789abcdefghij}
+    access-ttl-seconds: ${YUNSIE_JWT_ACCESS_TTL:7200}
+    refresh-ttl-seconds: ${YUNSIE_JWT_REFRESH_TTL:2592000}
+  demo:
+    # Demo 演示入口（本地开发/演示环境一键进入；默认关闭，生产严禁开启——真实登录与权限不变）
+    enabled: ${YUNSIE_DEMO_ENABLED:false}
+    username: ${YUNSIE_DEMO_USERNAME:demo_learner}
+    # 演示三角色：teacher/admin 复用既有演示账号（admin 默认指向 V3 种子管理员 admin）
+    teacher-username: ${YUNSIE_DEMO_TEACHER_USERNAME:demo_teacher}
+    admin-username: ${YUNSIE_DEMO_ADMIN_USERNAME:admin}
+  minio:
+    endpoint: ${MINIO_ENDPOINT:http://localhost:9000}
+    # 预签名播放 URL 的浏览器可达地址；空 = 与 endpoint 一致（本地开发不变）
+    public-endpoint: ${MINIO_PUBLIC_ENDPOINT:}
+    # 显式区域：预签名本地计算、不发起 region 发现请求（MinIO 默认区域）
+    region: ${MINIO_REGION:us-east-1}
+    access-key: ${MINIO_ACCESS_KEY:minioadmin}
+    secret-key: ${MINIO_SECRET_KEY:minioadmin}
+    bucket: ${MINIO_BUCKET:yunsie-videos}
+  course:
+    # 完成阈值（配置化：position >= duration * finish-threshold 判定 finished）
+    finish-threshold: ${YUNSIE_COURSE_FINISH_THRESHOLD:0.95}
+    # 播放凭证有效期（秒，短有效期预签名 URL）
+    play-url-expiry-seconds: ${YUNSIE_COURSE_PLAY_URL_EXPIRY:900}
+  notify:
+    exam-reminder:
+      # 开考提醒提前窗口（小时）：valid_from 落入 [now, now+lookahead] 的已发布考试触发提醒
+      lookahead-hours: ${YUNSIE_NOTIFY_REMINDER_LOOKAHEAD_HOURS:24}
+      # 提醒扫描间隔（毫秒）
+      scan-delay-ms: ${YUNSIE_NOTIFY_REMINDER_SCAN_DELAY_MS:60000}
+
+logging:
+  pattern:
+    console: "%d{yyyy-MM-dd HH:mm:ss.SSS} %-5level [%X{traceId:-}] [%thread] %logger{40} - %msg%n"
+
+# MyBatis-Plus（backend-development / database-design：逻辑删除、下划线转驼峰）
+mybatis-plus:
+  configuration:
+    map-underscore-to-camel-case: true
+  global-config:
+    banner: false
+    db-config:
+      logic-delete-field: deleted
+      logic-delete-value: 1
+      logic-not-delete-value: 0
+
+# OpenAPI 3（api-design：接口文档为唯一契约）
+springdoc:
+  api-docs:
+    path: /api-docs
+  swagger-ui:
+    path: /swagger-ui.html
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info

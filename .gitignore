@@ -1,0 +1,46 @@
+# ---- Java / Maven ----
+target/
+*.class
+*.jar
+!.mvn/wrapper/*.jar
+
+# ---- Node ----
+node_modules/
+dist/
+*.local
+
+# ---- Python ----
+__pycache__/
+*.py[cod]
+.venv/
+venv/
+
+# ---- 环境与密钥（禁止提交真实凭据）----
+.env
+.env.*
+!.env.example
+
+# ---- IDE / OS ----
+.idea/
+.vscode/
+*.iml
+.DS_Store
+Thumbs.db
+
+# ---- 日志 ----
+logs/
+*.log
+
+# ---- Playwright（本地产物，不进仓库）----
+test-results/
+playwright-report/
+blob-report/
+apps/web/e2e/.state.json
+apps/web/e2e/.deploy-state.json
+
+# ---- 前端临时/生成文件（不进仓库）----
+apps/web/_demodebug.mjs
+apps/web/_visualcheck.mjs
+apps/web/_shot-*.png
+apps/web/vite.config.js
+apps/web/vite.config.d.ts

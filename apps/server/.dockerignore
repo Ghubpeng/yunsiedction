@@ -1,0 +1,10 @@
+# 构建上下文 = apps/server；禁止把构建产物/密钥/IDE 文件送入上下文
+**/target/
+.git
+.gitignore
+.idea
+*.iml
+*.log
+logs/
+.vscode
+# 迁移 SQL 等源码必须保留（Flyway classpath 资源）

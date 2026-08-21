@@ -1,0 +1,14 @@
+# 构建上下文 = apps/web；禁止把依赖/构建产物/E2E 数据/密钥送入上下文
+node_modules/
+dist/
+e2e/
+test-results/
+playwright-report/
+.env
+.env.*
+!.env.example
+.git
+.gitignore
+.idea
+*.log
+Dockerfile

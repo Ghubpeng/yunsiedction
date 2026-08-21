@@ -1,0 +1,153 @@
+# Stage 1 开发基础设施 + Stage 2.0 应用交付层
+# 开发：scripts\dev-infra.ps1 仅启动 mysql/redis/minio；Java/Web 本地热更新（决策 G4）
+# 交付：scripts\build.ps1 + scripts\up.ps1 一键构建并启动完整应用栈（server/web + 基础设施）
+# ai-service 使用 profiles=ai 按需容器启动；日常调试用本地 uvicorn --reload。
+# 运行配置一律经 deploy/docker/.env 注入（复制 .env.example）；仓库内无真实密钥。
+
+name: yunsie-dev
+
+services:
+  mysql:
+    image: mysql:8.4
+    container_name: yunsie-mysql
+    restart: unless-stopped
+    environment:
+      MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD:-devpassword}
+      MYSQL_DATABASE: ${MYSQL_DATABASE:-yunsie_platform}
+      TZ: Asia/Shanghai
+    ports:
+      - "3306:3306"
+    volumes:
+      - mysql-data:/var/lib/mysql
+    healthcheck:
+      test: ["CMD-SHELL", "mysqladmin ping -h localhost -uroot -p${MYSQL_ROOT_PASSWORD:-devpassword} --silent"]
+      interval: 10s
+      timeout: 5s
+      retries: 12
+
+  redis:
+    image: redis:7.4-alpine
+    container_name: yunsie-redis
+    restart: unless-stopped
+    command: ["redis-server", "--appendonly", "yes"]
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis-data:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 12
+
+  minio:
+    image: minio/minio:latest
+    container_name: yunsie-minio
+    restart: unless-stopped
+    command: server /data --console-address ":9001"
+    environment:
+      MINIO_ROOT_USER: ${MINIO_ROOT_USER:-minioadmin}
+      MINIO_ROOT_PASSWORD: ${MINIO_ROOT_PASSWORD:-minioadmin}
+    ports:
+      - "9000:9000"
+      - "9001:9001"
+    volumes:
+      - minio-data:/data
+    healthcheck:
+      test: ["CMD-SHELL", "curl -sf http://localhost:9000/minio/health/live || exit 1"]
+      interval: 15s
+      timeout: 5s
+      retries: 12
+
+  # ---- Stage 2.0 应用层 ----
+
+  server:
+    build:
+      context: ../../apps/server
+    image: yunsie-server:local
+    container_name: yunsie-server-app
+    restart: unless-stopped
+    depends_on:
+      mysql:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+      minio:
+        condition: service_healthy
+    environment:
+      # 依赖连接（compose 网络 DNS；全部环境变量化，禁止写死密码）
+      MYSQL_HOST: mysql
+      MYSQL_PORT: 3306
+      MYSQL_DATABASE: ${MYSQL_DATABASE:-yunsie_platform}
+      MYSQL_USER: ${MYSQL_USER:-root}
+      MYSQL_PASSWORD: ${MYSQL_ROOT_PASSWORD:-devpassword}
+      REDIS_HOST: redis
+      REDIS_PORT: 6379
+      MINIO_ENDPOINT: http://minio:9000
+      # 预签名播放 URL 必须用浏览器可达地址（S3 签名包含 Host，内网 DNS 生成的 URL 浏览器无法播放）
+      MINIO_PUBLIC_ENDPOINT: ${MINIO_PUBLIC_ENDPOINT:-http://localhost:9000}
+      MINIO_REGION: ${MINIO_REGION:-us-east-1}
+      MINIO_ACCESS_KEY: ${MINIO_ROOT_USER:-minioadmin}
+      MINIO_SECRET_KEY: ${MINIO_ROOT_PASSWORD:-minioadmin}
+      MINIO_BUCKET: ${MINIO_BUCKET:-yunsie-videos}
+      # 生产必须经 .env 注入强密钥；默认值仅为本地开发占位（application.yml 同语义）
+      YUNSIE_JWT_SECRET: ${YUNSIE_JWT_SECRET:-dev-only-secret-please-change-0123456789abcdefghij}
+      # Demo 一键登录（仅演示环境开启；生产必须 false——端点随开关不存在）
+      YUNSIE_DEMO_ENABLED: ${YUNSIE_DEMO_ENABLED:-false}
+      YUNSIE_DEMO_USERNAME: ${YUNSIE_DEMO_USERNAME:-demo_learner}
+      # 演示三角色账号（teacher/admin 复用既有演示账号；admin 默认指向 V3 种子管理员）
+      YUNSIE_DEMO_TEACHER_USERNAME: ${YUNSIE_DEMO_TEACHER_USERNAME:-demo_teacher}
+      YUNSIE_DEMO_ADMIN_USERNAME: ${YUNSIE_DEMO_ADMIN_USERNAME:-admin}
+      JAVA_OPTS: ${SERVER_JAVA_OPTS:--XX:MaxRAMPercentage=75.0}
+    ports:
+      - "8080:8080"
+    healthcheck:
+      # Flyway 迁移由应用启动执行；健康检查真实调用 actuator
+      test: ["CMD-SHELL", "wget -qO- http://localhost:8080/actuator/health | grep -q UP || exit 1"]
+      interval: 15s
+      timeout: 5s
+      retries: 20
+      start_period: 90s
+
+  web:
+    build:
+      context: ../../apps/web
+      # Demo 入口按钮为构建期开关（生产构建 false → 按钮不存在；Vite dev 恒有）
+      args:
+        VITE_DEMO_ENABLED: ${YUNSIE_DEMO_ENABLED:-false}
+    image: yunsie-web:local
+    container_name: yunsie-web-app
+    restart: unless-stopped
+    depends_on:
+      server:
+        condition: service_healthy
+    ports:
+      # 80：演示体验入口（http://localhost 打开即是产品首页）；5173：兼容既有测试/脚本
+      - "80:80"
+      - "5173:80"
+    healthcheck:
+      # 显式 IPv4：容器内 localhost 可能解析为 ::1 而 nginx 仅监听 IPv4
+      test: ["CMD-SHELL", "wget -qO- http://127.0.0.1/ >/dev/null 2>&1 || exit 1"]
+      interval: 15s
+      timeout: 5s
+      retries: 5
+
+  # AI 服务：按需启动（docker compose --profile ai up -d ai-service）
+  ai-service:
+    build:
+      context: ../../apps/ai-service
+    container_name: yunsie-ai-service
+    profiles: ["ai"]
+    environment:
+      AI_ENV: dev
+      AI_INTERNAL_API_SECRET: ${AI_INTERNAL_API_SECRET:-}
+      # Provider 密钥全部经环境注入，绝不写入仓库（无真实凭据）
+      AI_PROVIDERS__DEEPSEEK__BASE_URL: ${AI_PROVIDERS__DEEPSEEK__BASE_URL:-}
+      AI_PROVIDERS__DEEPSEEK__API_KEY: ${AI_PROVIDERS__DEEPSEEK__API_KEY:-}
+    ports:
+      - "8000:8000"
+
+volumes:
+  mysql-data:
+  redis-data:
+  minio-data:
